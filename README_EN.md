@@ -2,7 +2,7 @@
 
 [Language: RU](README.md)
 
-Modified wireless-regdb regulatory database based on Debian/wireless-regdb 2026.02.04.
+Modified wireless-regdb regulatory database based on https://kernel.org/pub/software/network/wireless-regdb
 Purpose: generate a custom *unsigned* `regulatory.db` with maximally relaxed restrictions for use in OpenWrt.
 
 > ⚠️ **WARNING:** this project intentionally removes regulatory limits on frequencies/power and ignores regulatory flags.
@@ -23,6 +23,7 @@ chmod +x run.sh
 The `run.sh` script executes:
 
 ```bash
+bash update_regdb.sh
 python3 db_txt_modificator.py db.txt.orig db.txt
 python3 db2fw.py regulatory.db db.txt
 ```
@@ -42,9 +43,11 @@ All countries are assigned the same profile with maximal (for this project) para
   - 5150–5350 MHz
   - 5470–5850 MHz
   - 5850–5895 MHz
-  up to 36 dBm
+  - up to 36 dBm
 - **6 GHz:** 5925–7125 MHz (full Wi‑Fi 6E band), up to 36 dBm
 - **60 GHz:** 57–71 GHz (802.11ad/ay), up to 44 dBm
+
+For each band the **maximum possible channel width** supported by the driver/kernel for this spectrum is enabled (20/40/80/160/320 MHz, and up to 2160 MHz for 60 GHz), i.e. the configuration is aimed at using the widest available channels.
 
 Removed/ignored:
 
@@ -81,7 +84,7 @@ The effective throughput on channel 14 is limited to 802.11b rates (up to ~11 Mb
 ## Repository contents
 
 - **`regulatory.db`** — rebuilt binary DB file (overwritten by scripts).
-- **`db.txt.orig`** — original wireless-regdb text dump.
+- **`db.txt.orig`** — original wireless-regdb text dump (may be automatically updated from Debian/wireless-regdb).
 - **`db.txt`** — modified dump, generated automatically (overwritten).
 - **`db_txt_modificator.py`** — `db.txt` modifier:
   - removes comments;
@@ -92,13 +95,20 @@ The effective throughput on channel 14 is limited to 802.11b rates (up to ~11 Mb
   - removes dependency on the signing/crypto library;
   - creates an *unsigned* `regulatory.db` compatible with OpenWrt;
   - file format matches standard `regulatory.db`, without the signature field.
-- **`run.sh`** — wrapper for the full workflow.
+- **`run.sh`** — wrapper for the full workflow:
+  - update the source database (via `update_regdb.sh`);
+  - generate the modified `db.txt`;
+  - build `regulatory.db`.
+- **`update_regdb.sh`** — source DB update script:
+  - downloads a fresh `db.txt.orig` from https://kernel.org/pub/software/network/wireless-regdb when needed;
+  - updates the `version` file with information about the used source version.
+- **`version`** — text file with the version/date of the wireless-regdb snapshot used as `db.txt.orig`.
 
 ---
 
 ## How it works
 
-1. `db.txt.orig` (dump of the standard regulatory DB) is used as input.
+1. `db.txt.orig` (dump of the standard regulatory DB) is used as input. When `run.sh` is called, it may be automatically updated via `update_regdb.sh`.
 2. `db_txt_modificator.py`:
    - keeps only the `country CC:` header for each country;
    - inserts a predefined set of frequency/power ranges (`TEMPLATE_LINES`);
