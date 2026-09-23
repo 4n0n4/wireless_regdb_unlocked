@@ -34,20 +34,65 @@ As a result, a new `regulatory.db` appears in the repository root.
 
 ## Frequency profile and parameters
 
-All countries are assigned the same profile with maximal (for this project) parameters:
+All countries are assigned the same profile with maximal (for this project) parameters.
 
-- **Sub‑GHz:** 755–928 MHz, up to 36 dBm
-- **2.4 GHz:** 2400–2494 MHz (channels 1–14), up to 36 dBm
-- **4.9 GHz:** 4910–4990 MHz, up to 36 dBm
-- **5 GHz:**
-  - 5150–5350 MHz
-  - 5470–5850 MHz
-  - 5850–5895 MHz
-  - up to 36 dBm
-- **6 GHz:** 5925–7125 MHz (full Wi‑Fi 6E band), up to 36 dBm
-- **60 GHz:** 57–71 GHz (802.11ad/ay), up to 44 dBm
+Raw wireless-regdb entries:
 
-For each band the **maximum possible channel width** supported by the driver/kernel for this spectrum is enabled (20/40/80/160/320 MHz, and up to 2160 MHz for 60 GHz), i.e. the configuration is aimed at using the widest available channels.
+```text
+(755 - 928 @ 16), (36)
+(2400 - 2483.5 @ 40), (36)
+(2474 - 2494 @ 20), (36)
+(4910 - 4990 @ 40), (36)
+(5150 - 5350 @ 160), (36)
+(5470 - 5730 @ 160), (36)
+(5730 - 5895 @ 160), (36)
+(5925 - 7125 @ 320), (36)
+(57000 - 71000 @ 2160), (44)
+```
+
+Explanation by band:
+
+- **Sub‑GHz (755–928 MHz)**
+  - Various sub‑GHz / IoT ranges (actual use depends on region and chipset)
+  - Max channel width: **16 MHz**
+  - Max power: **36 dBm**
+
+- **2.4 GHz**
+  - **2400–2483.5 MHz** — channels **1–13**, up to **40 MHz** width, up to **36 dBm**
+  - **2474–2494 MHz** — channel **14**, **20 MHz** width, up to **36 dBm**
+    (standard limitation: channel 14 is 802.11b‑only, see the Channel 14 section)
+
+- **4.9 GHz (4910–4990 MHz)**
+  - Public safety 4.9 GHz range (works only if hardware/driver supports it)
+  - Approximate channel numbers: **184–196** (20/40 MHz)
+  - Max channel width: **40 MHz**
+  - Max power: **36 dBm**
+
+- **5 GHz**
+  - Frequency range: **5150–5895 MHz**
+  - Channels (20 MHz):
+    - **36–64** — lower 5 GHz band (5150–5350 MHz)
+    - **100–144** — DFS band (5470–5730 MHz)
+    - **149–177** — upper 5 GHz band (5730–5895 MHz)
+  - Max channel width: up to **160 MHz** (80/80+80/160, if supported)
+  - Max power: **36 dBm**
+
+- **6/7 GHz (Wi‑Fi 6E, 5925–7125 MHz)**
+  - Full Wi‑Fi 6E band: lower, mid and upper blocks
+  - Frequency range: **5925–7125 MHz**
+  - Channels (20 MHz): **1–233**
+    (roughly: lower block ≈ channels 1–93, mid ≈ 97–149, upper ≈ 153–233; exact mapping may vary by region/firmware)
+  - Max channel width: up to **320 MHz**
+  - Max power: **36 dBm**
+
+- **60 GHz (57–71 GHz)**
+  - 802.11ad/ay bands
+  - Frequency range: **57000–71000 MHz**
+  - Channel layout depends on implementation (typically several 2.16 GHz‑wide channels)
+  - Max channel width: up to **2160 MHz**
+  - Max power: **44 dBm**
+
+All bands are configured with the maximum channel widths and power levels allowed by this regdb template. Actual usable channels and modes still depend on your specific chipset and driver.
 
 Removed/ignored:
 
