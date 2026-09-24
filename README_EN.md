@@ -5,7 +5,7 @@
 Modified wireless-regdb regulatory database based on https://kernel.org/pub/software/network/wireless-regdb
 Purpose: generate a custom *unsigned* `regulatory.db` with maximally relaxed restrictions for use in OpenWrt.
 
-> ⚠️ **WARNING:** this project intentionally removes regulatory limits on frequencies/power and ignores regulatory flags.
+> ⚠️ **WARNING:** this project intentionally removes limits on used frequencies, channel widths and EIRP/power, and ignores regulatory flags.
 > Usage may violate local laws. The user bears full responsibility.
 
 ---
@@ -34,7 +34,7 @@ As a result, a new `regulatory.db` appears in the repository root.
 
 ## Frequency profile and parameters
 
-All countries are assigned the same profile with maximal (for this project) parameters.
+All countries are assigned the same profile with maximally relaxed limits (for this project).
 
 Raw wireless-regdb entries:
 
@@ -53,53 +53,54 @@ Raw wireless-regdb entries:
 Explanation by band:
 
 - **Sub‑GHz (755–928 MHz)**
-  - Various sub‑GHz / IoT ranges (actual use depends on region and chipset)
-  - Max channel width: **16 MHz**
-  - Max power: **36 dBm**
+  - Generic sub‑GHz / IoT ranges (actual use depends on region and chipset)
+  - Max channel width (per regdb rule): **16 MHz**
+  - Max EIRP: **36 dBm**
 
 - **2.4 GHz**
-  - **2400–2483.5 MHz** — channels **1–13**, up to **40 MHz** width, up to **36 dBm**
-  - **2474–2494 MHz** — channel **14**, **20 MHz** width, up to **36 dBm**
+  - **2400–2483.5 MHz** — channels **1–13**, up to **40 MHz** width, up to **36 dBm EIRP**
+  - **2474–2494 MHz** — channel **14**, **20 MHz** width, up to **36 dBm EIRP**
     (standard limitation: channel 14 is 802.11b‑only, see the Channel 14 section)
 
 - **4.9 GHz (4910–4990 MHz)**
-  - Public safety 4.9 GHz range (works only if hardware/driver supports it)
-  - Approximate channel numbers: **184–196** (20/40 MHz)
+  - Public safety 4.9 GHz range (works only if hardware/driver support it)
+  - Example channel numbers in some regulatory classes: **184–196** (20/40 MHz)
   - Max channel width: **40 MHz**
-  - Max power: **36 dBm**
+  - Max EIRP: **36 dBm**
 
 - **5 GHz**
-  - Frequency range: **5150–5895 MHz**
+  - Frequency range (regdb rules): **5150–5895 MHz**
   - Channels (20 MHz):
-    - **36–64** — lower 5 GHz band (5150–5350 MHz)
-    - **100–144** — DFS band (5470–5730 MHz)
-    - **149–177** — upper 5 GHz band (5730–5895 MHz)
-  - Max channel width: up to **160 MHz** (80/80+80/160, if supported)
-  - Max power: **36 dBm**
+    - **36–64** — lower 5 GHz band (≈ 5150–5350 MHz)
+    - **100–144** — DFS band in standard profiles (≈ 5470–5730 MHz)
+    - **149–177** — upper 5 GHz band (≈ 5730–5895 MHz)
+  - Max channel width: up to **160 MHz** (80, 80+80, 160, if supported)
+  - Max EIRP: **36 dBm**
 
-- **6/7 GHz (Wi‑Fi 6E, 5925–7125 MHz)**
-  - Full Wi‑Fi 6E band: lower, mid and upper blocks
+- **6 GHz (Wi‑Fi 6E / Wi‑Fi 7, 5925–7125 MHz)**
+  - Full 6 GHz band: lower, mid and upper blocks
   - Frequency range: **5925–7125 MHz**
-  - Channels (20 MHz): **1–233**
-    (roughly: lower block ≈ channels 1–93, mid ≈ 97–149, upper ≈ 153–233; exact mapping may vary by region/firmware)
-  - Max channel width: up to **320 MHz**
-  - Max power: **36 dBm**
+  - 20 MHz channels: **1, 5, 9, …, 229, 233**
+    (exact availability and mapping may vary by region/firmware)
+  - Typical standard support:
+    - Wi‑Fi 6E (802.11ax): up to **160 MHz** channel width
+    - Wi‑Fi 7 (802.11be): up to **320 MHz** channel width
+  - Max EIRP (regdb rule): **36 dBm**
 
-- **60 GHz (57–71 GHz)**
+- **60 GHz / mmWave (57–71 GHz)**
   - 802.11ad/ay bands
-  - Frequency range: **57000–71000 MHz**
+  - Frequency range (regdb rule): **57000–71000 MHz**
   - Channel layout depends on implementation (typically several 2.16 GHz‑wide channels)
-  - Max channel width: up to **2160 MHz**
-  - Max power: **44 dBm**
+  - Max channel width (per rule): **2160 MHz**
+  - Max EIRP: **44 dBm**
 
-All bands are configured with the maximum channel widths and power levels allowed by this regdb template. Actual usable channels and modes still depend on your specific chipset and driver.
+All bands are configured with the highest channel widths and EIRP values chosen for this regdb template. Actual usable channels, widths and modes still depend on your specific chipset, firmware and driver.
 
 Removed/ignored:
 
 - per‑country profile differences;
 - indoor/outdoor restrictions;
-- DFS, TPC and other regulatory flags;
-- `regulatory.db` signature checking (in the OpenWrt context).
+- DFS, TPC and other regulatory flags.
 
 ---
 
