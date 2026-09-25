@@ -17,24 +17,25 @@ LATEST_VER="$(
 )"
 
 if [[ -z "$LATEST_VER" ]]; then
-    echo "не смог определить последнюю версию" >&2
+    echo "Не удалось определить последнюю версию (failed to determine the latest version)" >&2
     exit 1
 fi
 
-echo "текущая: ${CURRENT_VER:-<нет>} | доступна: $LATEST_VER"
+echo "Текущая версия: ${CURRENT_VER:-<нет>} (current version: ${CURRENT_VER:-<none>})"
+echo "Доступная версия: $LATEST_VER (available version: $LATEST_VER)"
 
 if [[ "${CURRENT_VER:-}" == "$LATEST_VER" ]]; then
-    echo "новой версии нет"
+    echo "Новой версии нет (no newer version is available)"
     exit 0
 fi
 
 URL="${BASE_URL}/wireless-regdb-${LATEST_VER}.tar.xz"
-echo "качаю и распаковываю $URL..."
+echo "Скачивание и распаковка $URL (downloading and extracting $URL)..."
 
 curl -fsSL "$URL" \
   | tar -xJ -O --wildcards 'wireless-regdb-*/db.txt' > "$DB_OUT"
 
 echo "$LATEST_VER" > "$VERSION_FILE"
 
-echo "обновлено до версии $LATEST_VER"
-echo "db.txt из архива записан в $DB_OUT"
+echo "Обновлено до версии $LATEST_VER (updated to version $LATEST_VER)"
+echo "Файл db.txt из архива записан в $DB_OUT (db.txt from the archive was written to $DB_OUT)"
