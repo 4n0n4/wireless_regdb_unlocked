@@ -62,7 +62,7 @@ Raw `wireless-regdb` rules:
 #root@OpenWrt:~# iw reg get
 global
 country JP: DFS-UNSET
-  (755 - 928 @ 16), (N/A, 36), (N/A)        # 1-11/1-57 (860/900 MHz, 802.11ah)
+  (755 - 928 @ 16), (N/A, 36), (N/A)        # Regional Sub-GHz/802.11ah ranges; channel numbering varies by implementation
   (2400 - 2483 @ 40), (N/A, 36), (N/A)      # 1-13 (2.4 GHz, 802.11b/g/n/ax/be)
   (2474 - 2494 @ 20), (N/A, 36), (N/A)      # 14 (2.4 GHz, 802.11b/g/n/ax/be)
   (3655 - 3695 @ 40), (N/A, 36), (N/A)      # 131-138 (3.65 GHz, 802.11y)
@@ -79,12 +79,14 @@ country JP: DFS-UNSET
 
 ### Band details
 
-- **Sub‑GHz / 802.11ah (755–928 MHz)**
-  - This range covers multiple regional 802.11ah (Wi‑Fi HaLow) channel plans and other Sub‑GHz/IoT use cases.
-  - There is no single continuous channel-numbering scheme for the entire 755–928 MHz range. Channel numbers, center frequencies and supported widths depend on the regional plan, hardware and driver implementation.
+- **Sub‑GHz, including 802.11ah (755–928 MHz)**
+  - The project rule defines a single continuous **755–928 MHz** range covering several regional 802.11ah (Wi‑Fi HaLow) frequency plans.
+  - In actual regulatory plans, this is not one continuous band: permitted frequency blocks, channel numbers and center frequencies vary by region.
+  - There is no single channel plan for the entire 755–928 MHz range. Available frequencies and channel widths depend on the radio chipset, firmware, driver and supported regional plan.
   - Maximum width allowed by the `regdb` rule: **16 MHz**
-  - Maximum EIRP: **36 dBm**
-  - A dedicated Sub‑GHz/802.11ah radio is required; ordinary 2.4/5/6 GHz Wi‑Fi chipsets do not support this band.
+  - Maximum EIRP allowed by the rule: **36 dBm**
+  - A dedicated Sub‑GHz/802.11ah radio is required. Ordinary 2.4/5/6 GHz Wi‑Fi chipsets do not support this range.
+  - This rule does not add support for LoRa/LoRaWAN or other Sub‑GHz technologies, which normally use their own hardware, drivers and frequency configuration mechanisms.
 
 - **2.4 GHz**
   - **2400–2483.5 MHz** — channels **1–13**, up to **40 MHz**

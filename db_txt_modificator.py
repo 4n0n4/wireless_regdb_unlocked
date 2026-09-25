@@ -3,7 +3,7 @@ import sys
 import re
 
 TEMPLATE_LINES = [
-    "    (755 - 928 @ 16), (36)",       # 1-11/1-57 (860/900 MHz, 802.11ah)
+    "    (755 - 928 @ 16), (36)",       # Regional Sub-GHz/802.11ah ranges; channel numbering varies by implementation
     "    (2400 - 2483.5 @ 40), (36)",   # 1-13 (2.4 GHz, 802.11b/g/n/ax/be)
     "    (2474 - 2494 @ 20), (36)",     # 14 (2.4 GHz, 802.11b/g/n/ax/be)
     "    (3655 - 3695 @ 40), (36)",     # 131-138 (3.65 GHz, 802.11y)
