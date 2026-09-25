@@ -12,7 +12,7 @@ TEMPLATE_LINES = [
     "    (5150 - 5350 @ 160), (36)",    # 36-64 (5 GHz, 802.11a/h/n/ac/ax/be)
     "    (5350 - 5470 @ 80), (36)",     # Gap between ch. 64 and 100; U-NII-2B; no standard 20 MHz Wi-Fi channels
     "    (5470 - 5730 @ 160), (36)",    # 100-144 (5 GHz, 802.11a/h/n/ac/ax/be)
-    "    (5730 - 5990 @ 160), (36)",    # 149-196, 172–196 (5 GHz + 5.9 GHz, 802.11a/n/ac/ax/be/p)
+    "    (5730 - 5990 @ 160), (36)",    # 149-196 (5 GHz/5.9 GHz; ch. 172-196 include ITS/802.11p channel plans)
     "    (5925 - 7125 @ 320), (36)",    # 1-233 (6 GHz, 802.11ax/be)
     "    (42390 - 48330 @ 1080), (44)", # 1-15 (45 GHz, 802.11aj; 540 MHz and 1.08 GHz channels)
     "    (57000 - 71000 @ 2160), (44)", # 1-6 (60 GHz, 802.11ad/aj/ay; 2.16 GHz DMG channels)
