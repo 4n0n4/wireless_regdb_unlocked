@@ -2,7 +2,7 @@
 
 [Language: EN](README_EN.md)
 
-Модифицированная регуляторная база wireless-regdb на основе https://kernel.org/pub/software/network/wireless-regdb
+Модифицированная регуляторная база wireless-regdb на основе [wireless-regdb](https://kernel.org/pub/software/network/wireless-regdb/)
 Назначение — генерация кастомного *неподписанного* `regulatory.db` с максимально ослабленными ограничениями для использования в OpenWrt.
 
 > **⚠️ ВНИМАНИЕ**
@@ -140,7 +140,7 @@ country JP: DFS-UNSET
   - Макс. EIRP: **44 dBm**
   - Требуется специализированное mmWave-оборудование; обычные Wi‑Fi-радиомодули этот диапазон не поддерживают.
 
-- **60 ГГц / 802.11ad и 802.11ay (57-71 ГГц)**
+- **60 ГГц / 802.11ad, 802.11aj и 802.11ay (57-71 ГГц)**
   - Миллиметровый диапазон: **57000-71000 МГц**
   - Базовый план DMG включает каналы **1-6** шириной **2,16 ГГц**.
   - В 802.11ay также предусмотрены расширенные конфигурации EDMG и объединение каналов; их доступность зависит от оборудования и реализации.
@@ -193,7 +193,7 @@ country JP: DFS-UNSET
 ## Состав репозитория
 
 - **`regulatory.db`** — пересобранный бинарный файл БД (перезаписывается скриптом).
-- **`db.txt.orig`** — оригинальный текстовый дамп regdb (может быть автоматически обновлён из https://kernel.org/pub/software/network/wireless-regdb).
+- **`db.txt.orig`** — оригинальный текстовый дамп regdb (может быть автоматически обновлён из [wireless-regdb](https://kernel.org/pub/software/network/wireless-regdb/)).
 - **`db.txt`** — модифицированный дамп, генерируется автоматически (перезаписывается).
 - **`db_txt_modificator.py`** — модификатор `db.txt`:
   - удаляет комментарии;
@@ -209,7 +209,7 @@ country JP: DFS-UNSET
   - генерация модифицированного `db.txt`;
   - сборка `regulatory.db`.
 - **`update_regdb.sh`** — скрипт обновления исходной базы:
-  - при необходимости скачивает свежий `db.txt.orig` из https://kernel.org/pub/software/network/wireless-regdb; 
+  - при необходимости скачивает свежий `db.txt.orig` из [wireless-regdb](https://kernel.org/pub/software/network/wireless-regdb/); 
   - обновляет файл `version` с информацией о использованной версии.
 - **`version`** — текстовый файл с версией/датой исходного wireless-regdb, из которой взят `db.txt.orig`.
 

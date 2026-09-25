@@ -2,7 +2,7 @@
 
 [Language: RU](README.md)
 
-Modified wireless-regdb regulatory database based on https://kernel.org/pub/software/network/wireless-regdb
+Modified wireless-regdb regulatory database based on [wireless-regdb](https://kernel.org/pub/software/network/wireless-regdb/)
 Purpose: generate a custom *unsigned* `regulatory.db` with maximally relaxed restrictions for use in OpenWrt.
 
 > **⚠️ WARNING**
@@ -195,7 +195,7 @@ The nominal PHY rate on channel 14 is limited to 802.11b rates of up to 11 Mbit/
 ## Repository contents
 
 - **`regulatory.db`** — rebuilt binary DB file (overwritten by scripts).
-- **`db.txt.orig`** — original wireless-regdb text dump (may be automatically updated from https://kernel.org/pub/software/network/wireless-regdb).
+- **`db.txt.orig`** — original wireless-regdb text dump (may be automatically updated from [wireless-regdb](https://kernel.org/pub/software/network/wireless-regdb/)).
 - **`db.txt`** — modified dump, generated automatically (overwritten).
 - **`db_txt_modificator.py`** — `db.txt` modifier:
   - removes comments;
@@ -211,7 +211,7 @@ The nominal PHY rate on channel 14 is limited to 802.11b rates of up to 11 Mbit/
   - generate the modified `db.txt`;
   - build `regulatory.db`.
 - **`update_regdb.sh`** — source DB update script:
-  - downloads a fresh `db.txt.orig` from https://kernel.org/pub/software/network/wireless-regdb when needed;
+  - downloads a fresh `db.txt.orig` from [wireless-regdb](https://kernel.org/pub/software/network/wireless-regdb/) when needed;
   - updates the `version` file with information about the used source version.
 - **`version`** — text file with the version/date of the wireless-regdb snapshot used as `db.txt.orig`.
 
