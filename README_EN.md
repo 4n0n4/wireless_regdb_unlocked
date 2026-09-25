@@ -64,17 +64,17 @@ global
 country JP: DFS-UNSET
   (755 - 928 @ 16), (N/A, 36), (N/A)        # Regional Sub-GHz/802.11ah ranges; channel numbering varies by implementation
   (2400 - 2483 @ 40), (N/A, 36), (N/A)      # 1-13 (2.4 GHz, 802.11b/g/n/ax/be)
-  (2474 - 2494 @ 20), (N/A, 36), (N/A)      # 14 (2.4 GHz, 802.11b/g/n/ax/be)
+  (2474 - 2494 @ 20), (N/A, 36), (N/A)      # 14 (2.4 GHz, 802.11b)
   (3655 - 3695 @ 40), (N/A, 36), (N/A)      # 131-138 (3.65 GHz, 802.11y)
   (4910 - 4990 @ 40), (N/A, 36), (N/A)      # 184–196, 191/195, 21/25 (4.9 GHz, JP/US public safety)
   (5030 - 5090 @ 40), (N/A, 36), (N/A)      # 8/12/16 (5.0 GHz, 802.11j, now revoked in JP)
   (5150 - 5350 @ 160), (N/A, 36), (N/A)     # 36(32)-64(68) (5 GHz, 802.11a/h/n/ac/ax/be)
-  (5350 - 5470 @ 80), (N/A, 36), (N/A)      # 68-96 (5 GHz, 802.11a/h/n/ac/ax/be)
+  (5350 - 5470 @ 80), (N/A, 36), (N/A)      # Gap between ch. 64 and 100; U-NII-2B; no standard 20 MHz Wi-Fi channels
   (5470 - 5730 @ 160), (N/A, 36), (N/A)     # 100(96)-144 (5 GHz, 802.11a/h/n/ac/ax/be)
   (5730 - 5990 @ 160), (N/A, 36), (N/A)     # 149-196, 172–196 (5 GHz + 5.9 GHz, 802.11a/n/ac/ax/be/p)
   (5925 - 7125 @ 320), (N/A, 36), (N/A)     # 1-233 (6 GHz, 802.11ax/be)
-  (42390 - 48330 @ 1080), (N/A, 44), (N/A)  # 1-15 (45 GHz, 802.11aj)
-  (57000 - 71000 @ 2160), (N/A, 44), (N/A)  # 1-40 (60 GHz, 802.11ad/aj/ay)
+  (42390 - 48330 @ 1080), (N/A, 44), (N/A)  # 1-15 (45 GHz, 802.11aj; 540 MHz and 1.08 GHz channels)
+  (57000 - 71000 @ 2160), (N/A, 44), (N/A)  # 1-6 (60 GHz, 802.11ad/aj/ay; 2.16 GHz DMG channels)
 ```
 
 ### Band details
@@ -89,7 +89,7 @@ country JP: DFS-UNSET
   - This rule does not add support for LoRa/LoRaWAN or other Sub‑GHz technologies, which normally use their own hardware, drivers and frequency configuration mechanisms.
 
 - **2.4 GHz**
-  - **2400–2483.5 MHz** — channels **1–13**, up to **40 MHz**
+  - **2400–2483 MHz** — channels **1–13**, up to **40 MHz**
   - **2474–2494 MHz** — channel **14**, up to **20 MHz**
   - Maximum EIRP: **36 dBm**
   - The rule does not override limitations imposed by the wireless standard or driver. In common implementations, channel 14 is available only in compatible modes, usually 802.11b.
@@ -118,12 +118,11 @@ country JP: DFS-UNSET
 - **5 GHz and 5.9 GHz (5150–5990 MHz)**
   - The rules are divided into several blocks:
     - **5150–5350 MHz** — up to **160 MHz**, including the common lower-band channels **36–64**
-    - **5350–5470 MHz** — up to **80 MHz**; an intermediate range not normally supported by most consumer devices
+    - **5350–5470 MHz** — up to **80 MHz**; an intermediate U-NII-2B range between standard channels **64** and **100**, containing no normally assigned 20 MHz Wi-Fi channels and unsupported by most consumer devices
     - **5470–5730 MHz** — up to **160 MHz**, including channels **100–144**
-    - **5730–5990 MHz** — up to **160 MHz**, including upper 5 GHz channels and part of the 5.9 GHz/ITS spectrum
-  - Depending on the numbering scheme and implementation, the range may include channel numbers up to **196**.
+    - **5730–5990 MHz** — up to **160 MHz**, covering upper channels **149–196**; channels **172–196** fall within part of the 5.9 GHz/ITS spectrum
   - Maximum EIRP: **36 dBm**
-  - 80, 80+80 and 160 MHz operation is available only when supported by the chipset and driver.
+  - 80, 80+80, and 160 MHz operation is available only when supported by the chipset and driver.
   - The **5350–5470 MHz** block and the upper part of **5730–5990 MHz** are normally not fully supported by consumer Wi‑Fi hardware, even when listed in `regdb`.
 
 - **6 GHz / Wi‑Fi 6E and Wi‑Fi 7 (5925–7125 MHz)**
@@ -135,17 +134,17 @@ country JP: DFS-UNSET
   - Availability of the full band and 320 MHz operation depends on the radio generation, firmware and driver.
 
 - **45 GHz / 802.11aj (42.39–48.33 GHz)**
-  - A millimeter-wave band intended for specialized 802.11aj implementations.
-  - Approximate channel numbering: **1–15**.
+  - A millimeter-wave band used by specialized 802.11aj implementations.
+  - The channel plan includes channels **1–10** with a width of **540 MHz** and channels **11–15** with a width of **1.08 GHz**.
   - Maximum width allowed by the rule: **1080 MHz**
   - Maximum EIRP: **44 dBm**
-  - Specialized mmWave hardware is required; ordinary Wi‑Fi radios do not support this band.
+  - Specialized mmWave hardware is required; ordinary Wi-Fi radios do not support this band.
 
 - **60 GHz / 802.11ad, 802.11aj and 802.11ay (57–71 GHz)**
   - Millimeter-wave frequency range: **57000–71000 MHz**
-  - Channel layout depends on the standard and implementation; wide **2.16 GHz** channels are commonly used.
-  - Depending on the channel plan, numbering may include channels **1–40**.
-  - Maximum width allowed by the rule: **2160 MHz**
+  - The basic **2.16 GHz DMG** channel plan includes channels **1–6** fully contained within this frequency range.
+  - Other channel numbers may represent narrower or bonded channel configurations, depending on the standard and implementation.
+  - The regulatory rule permits a maximum width of **2160 MHz**; therefore, channel configurations wider than 2.16 GHz are not covered by this rule.
   - Maximum EIRP: **44 dBm**
   - A dedicated 60 GHz radio and antenna system are required.
 
