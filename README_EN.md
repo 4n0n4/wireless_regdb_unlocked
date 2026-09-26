@@ -2,8 +2,9 @@
 
 [Language: RU](README.md)
 
-Modified wireless-regdb regulatory database based on [wireless-regdb](https://kernel.org/pub/software/network/wireless-regdb/)
-Purpose: generate a custom *unsigned* `regulatory.db` with maximally relaxed restrictions for use in OpenWrt.
+Modified wireless-regdb regulatory database based on [wireless-regdb](https://kernel.org/pub/software/network/wireless-regdb/).
+
+Purpose: generate a custom *unsigned* `regulatory.db` with relaxed restrictions for use in OpenWrt. A built-in frequency profile can be selected during the build, and custom profiles can be added.
 
 > **⚠️ WARNING**
 >
@@ -15,16 +16,26 @@ Purpose: generate a custom *unsigned* `regulatory.db` with maximally relaxed res
 
 ## Quick start
 
+Build with the default `extended` preset:
+
 ```bash
 git clone https://github.com/4n0n4/wireless_regdb_unlocked.git
 cd wireless_regdb_unlocked
 chmod +x run.sh
 ./run.sh
-# then place regulatory.db into /lib/firmware/regulatory.db in your OpenWrt build
-# and reboot the router to load the new regulatory database
 ```
 
-After replacing `regulatory.db`, perform a **full router reboot**. Restarting Wi‑Fi or network services alone may not be sufficient because the regulatory database is loaded by the kernel and the `cfg80211` subsystem.
+Build with an explicitly selected preset:
+
+```bash
+./run.sh full
+./run.sh extended
+./run.sh mini
+```
+
+Then place `regulatory.db` into `/lib/firmware/regulatory.db` in your OpenWrt build and fully reboot the router to load the new regulatory database.
+
+After replacing `regulatory.db`, perform a **full router reboot**. Restarting Wi-Fi or network services alone may not be sufficient because the regulatory database is loaded by the kernel and the `cfg80211` subsystem.
 
 After rebooting, you can inspect the active regulatory rules with:
 
@@ -36,17 +47,98 @@ The `run.sh` script executes:
 
 ```bash
 bash update_regdb.sh
-python3 db_txt_modificator.py db.txt.orig db.txt
+python3 db_txt_modificator.py db.txt.orig db.txt <preset>
 python3 db2fw.py regulatory.db db.txt
 ```
+
+The `<preset>` argument is optional. If it is omitted, the `extended` preset is used.
 
 As a result, a new `regulatory.db` appears in the repository root.
 
 ---
 
-## Frequency profile and parameters
+## Presets
 
-All countries are assigned the same common profile with the most relaxed restrictions selected for this project.
+The project includes three built-in presets:
+
+- **`full`** - full experimental profile containing all bands added by the project, including rare and specialized bands;
+- **`extended`** - extended profile for commercially produced and available hardware; used by default;
+- **`mini`** - minimal profile containing the main conventional Wi-Fi bands.
+
+Select a preset by passing its name as the first argument to `run.sh`:
+
+```bash
+./run.sh full
+./run.sh extended
+./run.sh mini
+```
+
+Running the script without an argument selects `extended`:
+
+```bash
+./run.sh
+```
+
+To display the available presets:
+
+```bash
+python3 db_txt_modificator.py --list-presets
+```
+
+The shorter alias is also supported:
+
+```bash
+python3 db_txt_modificator.py --list
+```
+
+To display usage information:
+
+```bash
+python3 db_txt_modificator.py --help
+```
+
+The modifier can also be called directly:
+
+```bash
+python3 db_txt_modificator.py db.txt.orig db.txt full
+python3 db_txt_modificator.py db.txt.orig db.txt extended
+python3 db_txt_modificator.py db.txt.orig db.txt mini
+```
+
+### Custom presets
+
+Custom profiles can be added to the `PRESETS` dictionary in `db_txt_modificator.py`.
+
+To add a custom preset:
+
+1. Add a new entry with a unique name to `PRESETS`.
+2. Add the required `wireless-regdb` rules to that entry.
+3. Run the build with the new preset name:
+
+```bash
+./run.sh mypreset
+```
+
+Example:
+
+```python
+PRESETS = {
+    # Built-in presets...
+
+    <q>"mypreset"</q>: [
+        <q>"    (2400 - 2483.5 @ 40), (36)"</q>,
+        <q>"    (5150 - 5350 @ 160), (36)"</q>,
+    ],
+}
+```
+
+If preset descriptions used by `--list-presets` are stored separately in the script, add the custom preset name and its short description there as well.
+
+---
+
+## Frequency profiles and parameters
+
+The available bands depend on the selected preset. The complete experimental `full` profile is shown below.
 
 > **ℹ️ IMPORTANT: hardware support**
 >
@@ -54,14 +146,14 @@ All countries are assigned the same common profile with the most relaxed restric
 >
 > `regdb` only tells the kernel and driver which frequencies, channel widths and power levels may be used. Actual availability depends on the radio chipset, RF front end, calibration data, EEPROM/NVRAM, board design, antennas, firmware and driver. Most consumer routers will continue to expose only their normally supported bands and channels.
 >
-> In particular, the Sub‑GHz/HaLow, 3.65 GHz, 4.9-5.1 GHz, 45 GHz and 60 GHz bands require specialized hardware. Modifying `regdb` cannot add a missing radio chain or bypass hardware, calibration, firmware or driver limitations.
+> In particular, the Sub-GHz/HaLow, 3.65 GHz, 4.9–5.1 GHz, 45 GHz and 60 GHz bands require specialized hardware. Modifying `regdb` cannot add a missing radio chain or bypass hardware, calibration, firmware or driver limitations.
 
-Raw `wireless-regdb` rules:
+Raw `wireless-regdb` rules for the `full` preset:
 
-```bash
+```text
 #root@OpenWrt:~# iw reg get
 global
-country JP: DFS-UNSET
+country 00: DFS-UNSET
   (755 - 928 @ 16), (N/A, 36), (N/A)        # Regional Sub-GHz/802.11ah ranges; channel numbering varies by implementation
   (2400 - 2483 @ 40), (N/A, 36), (N/A)      # 1-13 (2.4 GHz, 802.11b/g/n/ax/be)
   (2474 - 2494 @ 20), (N/A, 36), (N/A)      # 14 (2.4 GHz, 802.11b)
@@ -71,13 +163,22 @@ country JP: DFS-UNSET
   (5150 - 5350 @ 160), (N/A, 36), (N/A)     # 36-64 (5 GHz, 802.11a/h/n/ac/ax/be)
   (5350 - 5470 @ 80), (N/A, 36), (N/A)      # Gap between ch. 64 and 100; U-NII-2B; no standard 20 MHz Wi-Fi channels
   (5470 - 5730 @ 160), (N/A, 36), (N/A)     # 100-144 (5 GHz, 802.11a/h/n/ac/ax/be)
-  (5730 - 5990 @ 160), (N/A, 36), (N/A)     # 149-196 (5 GHz/5.9 GHz; ch. 172-196 include ITS/802.11p channel plans)
+  (5730 - 5895 @ 160), (N/A, 36), (N/A)     # 149-177 (5 GHz, 802.11a/h/n/ac/ax/be)
+  (5850 - 5925 @ 20), (N/A, 36), (N/A)      # 172-196 (5.9 GHz, ITS/802.11p/OCB)
   (5925 - 7125 @ 320), (N/A, 36), (N/A)     # 1-233 (6 GHz, 802.11ax/be)
   (42390 - 48330 @ 1080), (N/A, 44), (N/A)  # 1-15 (45 GHz, 802.11aj; 540 MHz and 1.08 GHz channels)
   (57000 - 71000 @ 2160), (N/A, 44), (N/A)  # 1-6 (60 GHz, 802.11ad/aj/ay; 2.16 GHz DMG channels)
 ```
 
+The `extended` and `mini` presets use reduced rule sets. The rules selected during the build can be inspected in the generated `db.txt`. After installation and reboot, the active rules can be inspected with:
+
+```bash
+iw reg get
+```
+
 ### Band details
+
+The bands below describe the complete experimental `full` preset. The `extended` and `mini` presets contain only a subset of them.
 
 - **Sub‑GHz, including 802.11ah (755-928 MHz)**
   - The project rule defines a single continuous **755-928 MHz** range covering several regional 802.11ah (Wi‑Fi HaLow) frequency plans.
@@ -89,12 +190,12 @@ country JP: DFS-UNSET
   - This rule does not add support for LoRa/LoRaWAN or other Sub‑GHz technologies, which normally use their own hardware, drivers and frequency configuration mechanisms.
 
 - **2.4 GHz**
-  - **2400-2483 MHz** — channels **1-13**, up to **40 MHz**
-  - **2474-2494 MHz** — channel **14**, up to **20 MHz**
+  - **2400-2483.5 MHz** - channels **1-13**, up to **40 MHz**
+  - **2474-2494 MHz** - channel **14**, up to **20 MHz**
   - Maximum EIRP: **36 dBm**
   - The rule does not override limitations imposed by the wireless standard or driver. In common implementations, channel 14 is available only in compatible modes, usually 802.11b.
 
-- **3.65 GHz / 802.11y (3655-3695 MHz)**
+- **3.65 GHz/802.11y (3655-3695 MHz)**
   - A specialized band associated with 802.11y implementations and broadband access systems.
   - It approximately covers channels **131-138** in the relevant channel-numbering plans.
   - Maximum width allowed by the rule: **40 MHz**
@@ -108,49 +209,50 @@ country JP: DFS-UNSET
   - Maximum EIRP: **36 dBm**
   - Most consumer routers cannot use this band because of RF, calibration, firmware or driver limitations.
 
-- **5.0 GHz / 802.11j (5030-5090 MHz)**
+- **5.0 GHz/802.11j (5030-5090 MHz)**
   - A specialized range historically used by some 802.11j implementations.
   - Possible channel numbers in the corresponding plan include **8, 12 and 16**.
   - Maximum width allowed by the rule: **40 MHz**
   - Maximum EIRP: **36 dBm**
   - Support is uncommon and depends on the specific hardware, firmware and driver.
 
-- **5 GHz and 5.9 GHz (5150-5990 MHz)**
-  - The rules are divided into several blocks:
-    - **5150-5350 MHz** — up to **160 MHz**, including the common lower-band channels **36-64**
-    - **5350-5470 MHz** — up to **80 MHz**; an intermediate U-NII-2B range between standard channels **64** and **100**, containing no normally assigned 20 MHz Wi-Fi channels and unsupported by most consumer devices
-    - **5470-5730 MHz** — up to **160 MHz**, including channels **100-144**
-    - **5730-5990 MHz** — up to **160 MHz**, covering upper channels **149-196**; channels **172-196** fall within part of the 5.9 GHz/ITS spectrum
+- **5 GHz and 5.9 GHz (5150-5925 MHz)**
+  - The full profile is divided into several blocks:
+    - **5150-5350 MHz** - up to **160 MHz**, including the common lower-band channels **36-64**
+    - **5350-5470 MHz** - up to **80 MHz**; an intermediate U-NII-2B range between standard channels **64** and **100**, containing no normally assigned 20 MHz Wi-Fi channels and unsupported by most consumer devices
+    - **5470-5730 MHz** - up to **160 MHz**, including channels **100-144**
+    - **5730-5895 MHz** - up to **160 MHz**, covering upper channels **149-177**
+    - **5850-5925 MHz** - up to **20 MHz**, covering channels **172-196** in the 5.9 GHz/ITS spectrum
   - Maximum EIRP: **36 dBm**
   - 80, 80+80, and 160 MHz operation is available only when supported by the chipset and driver.
-  - The **5350-5470 MHz** block and the upper part of **5730-5990 MHz** are normally not fully supported by consumer Wi‑Fi hardware, even when listed in `regdb`.
+  - The **5350-5470 MHz** and **5850-5925 MHz** blocks are normally not fully supported by consumer Wi-Fi hardware, even when listed in `regdb`.
 
-- **6 GHz / Wi‑Fi 6E and Wi‑Fi 7 (5925-7125 MHz)**
+- **6 GHz/Wi‑Fi 6E and Wi‑Fi 7 (5925-7125 MHz)**
   - Full frequency range: **5925-7125 MHz**
   - 20 MHz channels: **1, 5, 9, …, 229, 233**
-  - Wi‑Fi 6E / 802.11ax: channel widths up to **160 MHz**
-  - Wi‑Fi 7 / 802.11be: channel widths up to **320 MHz**
+  - Wi‑Fi 6E/802.11ax: channel widths up to **160 MHz**
+  - Wi‑Fi 7/802.11be: channel widths up to **320 MHz**
   - Maximum EIRP allowed by the rule: **36 dBm**
   - Availability of the full band and 320 MHz operation depends on the radio generation, firmware and driver.
 
-- **45 GHz / 802.11aj (42.39-48.33 GHz)**
+- **45 GHz/802.11aj (42.39-48.33 GHz)**
   - A millimeter-wave band used by specialized 802.11aj implementations.
-  - The channel plan includes channels **1-10** with a width of **540 MHz** and channels **11-15** with a width of **1.08 GHz**.
+  - The frequency plan and channel numbering depend on the implementation.
   - Maximum width allowed by the rule: **1080 MHz**
   - Maximum EIRP: **44 dBm**
   - Specialized mmWave hardware is required; ordinary Wi-Fi radios do not support this band.
 
-- **60 GHz / 802.11ad, 802.11aj and 802.11ay (57-71 GHz)**
-  - Millimeter-wave frequency range: **57000-71000 MHz**
-  - The basic **2.16 GHz DMG** channel plan includes channels **1-6** fully contained within this frequency range.
-  - Other channel numbers may represent narrower or bonded channel configurations, depending on the standard and implementation.
-  - The regulatory rule permits a maximum width of **2160 MHz**; therefore, channel configurations wider than 2.16 GHz are not covered by this rule.
+- **60 GHz/802.11ad, 802.11aj and 802.11ay (57–71 GHz)**
+  - Millimeter-wave frequency range: **57000–71000 MHz**
+  - The basic DMG plan includes channels **1–6** with a width of **2.16 GHz**.
+  - 802.11ay also defines extended EDMG configurations and channel bonding; availability depends on the hardware and implementation.
+  - Maximum width allowed by the rule: **2160 MHz**
   - Maximum EIRP: **44 dBm**
   - A dedicated 60 GHz radio and antenna system are required.
 
-### What this profile changes
+### What the profiles change
 
-All listed bands use the maximum channel widths and EIRP values selected for this project. Every country is also assigned the same rule set without the usual country-specific differences.
+For the bands included in the selected preset, the project defines its chosen maximum channel widths and EIRP values. Every country is assigned the same rule set from the selected preset without the usual country-specific differences.
 
 Removed or not specified:
 
@@ -159,7 +261,7 @@ Removed or not specified:
 - DFS and TPC flags;
 - other `wireless-regdb` regulatory flags.
 
-This profile does **not** remove:
+The selected profile does **not** remove:
 
 - radio chipset and RF front-end limitations;
 - EEPROM, NVRAM and calibration restrictions;
@@ -175,10 +277,10 @@ Channel 14 support follows the standard: 802.11b only, 20 MHz channel width.
 
 Requirements:
 
-- Mode: **802.11b / Legacy with 802.11b rates enabled**
-- Width: **20 MHz**
+- mode: **802.11b/Legacy with 802.11b rates enabled**;
+- width: **20 MHz**.
 
-In LuCI / Wi‑Fi settings:
+In LuCI/Wi-Fi settings:
 
 1. Enable:
 
@@ -194,48 +296,55 @@ The nominal PHY rate on channel 14 is limited to 802.11b rates of up to 11 Mbit/
 
 ## Repository contents
 
-- **`regulatory.db`** — rebuilt binary DB file (overwritten by scripts).
-- **`db.txt.orig`** — original wireless-regdb text dump (may be automatically updated from [wireless-regdb](https://kernel.org/pub/software/network/wireless-regdb/)).
-- **`db.txt`** — modified dump, generated automatically (overwritten).
-- **`db_txt_modificator.py`** — `db.txt` modifier:
+- **`regulatory.db`** - rebuilt binary DB file, overwritten by the scripts.
+- **`db.txt.orig`** - original wireless-regdb text dump, which may be automatically updated from [wireless-regdb](https://kernel.org/pub/software/network/wireless-regdb/).
+- **`db.txt`** - modified dump, generated automatically and overwritten.
+- **`db_txt_modificator.py`** - `db.txt` modifier:
   - removes comments;
-  - for each country (`country XX:`) inserts a unified frequency/power profile;
+  - accepts an optional third argument containing the preset name;
+  - uses `extended` when no preset is specified;
+  - inserts the selected unified frequency/power profile for every country (`country XX:`);
+  - can display the list of available presets;
   - preserves the `wmmrule ETSI:` block without comments.
-- **`dbparse.py`** — text `db.txt` parser (from upstream wireless-regdb).
-- **`db2fw.py`** — modified `regulatory.db` builder:
-  - removes dependency on the signing/crypto library;
+- **`dbparse.py`** - text `db.txt` parser from upstream wireless-regdb.
+- **`db2fw.py`** - modified `regulatory.db` builder:
+  - removes the dependency on the signing/crypto library;
   - creates an *unsigned* `regulatory.db` compatible with OpenWrt;
-  - file format matches standard `regulatory.db`, without the signature field.
-- **`run.sh`** — wrapper for the full workflow:
-  - update the source database (via `update_regdb.sh`);
-  - generate the modified `db.txt`;
-  - build `regulatory.db`.
-- **`update_regdb.sh`** — source DB update script:
+  - uses the standard `regulatory.db` structure without a signature field.
+- **`run.sh`** - wrapper for the complete workflow:
+  - accepts the preset name as its first argument;
+  - updates the source database through `update_regdb.sh`;
+  - generates the modified `db.txt`;
+  - builds `regulatory.db`.
+- **`update_regdb.sh`** - source DB update script:
   - downloads a fresh `db.txt.orig` from [wireless-regdb](https://kernel.org/pub/software/network/wireless-regdb/) when needed;
-  - updates the `version` file with information about the used source version.
-- **`version`** — text file with the version/date of the wireless-regdb snapshot used as `db.txt.orig`.
+  - updates the `version` file with information about the source version used.
+- **`version`** - text file containing the version and date of the wireless-regdb snapshot used as `db.txt.orig`.
 
 ---
 
 ## How it works
 
-1. `db.txt.orig` (dump of the standard regulatory DB) is used as input. When `run.sh` is called, it may be automatically updated via `update_regdb.sh`.
-2. `db_txt_modificator.py`:
+1. `db.txt.orig`, a dump of the standard regulatory database, is used as input. When `run.sh` is called, it may be automatically updated through `update_regdb.sh`.
+2. `run.sh` passes its first argument to `db_txt_modificator.py` as the preset name. If the argument is omitted, `extended` is selected.
+3. `db_txt_modificator.py`:
+   - selects the requested built-in or custom preset;
    - keeps only the `country CC:` header for each country;
-   - inserts a predefined set of frequency/power ranges (`TEMPLATE_LINES`);
-   - result: a single maximally “unlocked” profile for all countries.
-3. `db2fw.py`:
+   - inserts the frequency and power rules from the selected preset;
+   - creates a common profile for all countries.
+4. `db2fw.py`:
    - parses the modified `db.txt`;
-   - builds a binary `regulatory.db` without a signature.
+   - builds an unsigned binary `regulatory.db`.
 
 ---
 
 ## Requirements
 
-- Python 3 (tested with 3.x);
-- standard Linux environment (bash, coreutils).
+- Python 3, tested with Python 3.x;
+- standard Linux environment: bash and coreutils;
+- curl.
 
-No additional Python packages (`pip install`) are required.
+No additional Python packages installed through `pip` are required.
 
 ---
 
@@ -244,7 +353,7 @@ No additional Python packages (`pip install`) are required.
 - The project targets OpenWrt, where `regulatory.db` signature verification is disabled.
 - On systems where signature verification is mandatory, this file will not work without:
   - a kernel patch; or
-  - your own signing infrastructure and corresponding key support in the kernel.
+  - a custom signing infrastructure and support for the corresponding key in the kernel.
 
 ---
 
