@@ -125,9 +125,9 @@ Example:
 PRESETS = {
     # Built-in presets...
 
-    <q>"mypreset"</q>: [
-        <q>"    (2400 - 2483.5 @ 40), (36)"</q>,
-        <q>"    (5150 - 5350 @ 160), (36)"</q>,
+    "mypreset": [
+        "    (2400 - 2483.5 @ 40), (36)",
+        "    (5150 - 5350 @ 160), (36)",
     ],
 }
 ```
@@ -184,8 +184,8 @@ The bands below describe the complete experimental `full` preset. The `extended`
   - The project rule defines a single continuous **755-928 MHz** range covering several regional 802.11ah (Wi‑Fi HaLow) frequency plans.
   - In actual regulatory plans, this is not one continuous band: permitted frequency blocks, channel numbers and center frequencies vary by region.
   - There is no single channel plan for the entire 755-928 MHz range. Available frequencies and channel widths depend on the radio chipset, firmware, driver and supported regional plan.
-  - Maximum width allowed by the `regdb` rule: **16 MHz**
-  - Maximum EIRP allowed by the rule: **36 dBm**
+  - Maximum width: **16 MHz**
+  - Maximum EIRP: **36 dBm**
   - A dedicated Sub‑GHz/802.11ah radio is required. Ordinary 2.4/5/6 GHz Wi‑Fi chipsets do not support this range.
   - This rule does not add support for LoRa/LoRaWAN or other Sub‑GHz technologies, which normally use their own hardware, drivers and frequency configuration mechanisms.
 
@@ -198,21 +198,21 @@ The bands below describe the complete experimental `full` preset. The `extended`
 - **3.65 GHz/802.11y (3655-3695 MHz)**
   - A specialized band associated with 802.11y implementations and broadband access systems.
   - It approximately covers channels **131-138** in the relevant channel-numbering plans.
-  - Maximum width allowed by the rule: **40 MHz**
+  - Maximum width: **40 MHz**
   - Maximum EIRP: **36 dBm**
   - Explicit support from the radio chipset, firmware and driver is required.
 
 - **4.9 GHz (4910-4990 MHz)**
   - A specialized band used, among other things, by public-safety systems and some regional WLAN variants.
   - Depending on the regulatory class, channel numbers may include **184-196** or use other numbering schemes.
-  - Maximum width allowed by the rule: **40 MHz**
+  - Maximum width: **40 MHz**
   - Maximum EIRP: **36 dBm**
   - Most consumer routers cannot use this band because of RF, calibration, firmware or driver limitations.
 
 - **5.0 GHz/802.11j (5030-5090 MHz)**
   - A specialized range historically used by some 802.11j implementations.
   - Possible channel numbers in the corresponding plan include **8, 12 and 16**.
-  - Maximum width allowed by the rule: **40 MHz**
+  - Maximum width: **40 MHz**
   - Maximum EIRP: **36 dBm**
   - Support is uncommon and depends on the specific hardware, firmware and driver.
 
@@ -232,13 +232,13 @@ The bands below describe the complete experimental `full` preset. The `extended`
   - 20 MHz channels: **1, 5, 9, …, 229, 233**
   - Wi‑Fi 6E/802.11ax: channel widths up to **160 MHz**
   - Wi‑Fi 7/802.11be: channel widths up to **320 MHz**
-  - Maximum EIRP allowed by the rule: **36 dBm**
+  - Maximum EIRP: **36 dBm**
   - Availability of the full band and 320 MHz operation depends on the radio generation, firmware and driver.
 
 - **45 GHz/802.11aj (42.39-48.33 GHz)**
   - A millimeter-wave band used by specialized 802.11aj implementations.
   - The frequency plan and channel numbering depend on the implementation.
-  - Maximum width allowed by the rule: **1080 MHz**
+  - Maximum width: **1080 MHz**
   - Maximum EIRP: **44 dBm**
   - Specialized mmWave hardware is required; ordinary Wi-Fi radios do not support this band.
 
@@ -246,7 +246,7 @@ The bands below describe the complete experimental `full` preset. The `extended`
   - Millimeter-wave frequency range: **57000–71000 MHz**
   - The basic DMG plan includes channels **1–6** with a width of **2.16 GHz**.
   - 802.11ay also defines extended EDMG configurations and channel bonding; availability depends on the hardware and implementation.
-  - Maximum width allowed by the rule: **2160 MHz**
+  - Maximum width: **2160 MHz**
   - Maximum EIRP: **44 dBm**
   - A dedicated 60 GHz radio and antenna system are required.
 
