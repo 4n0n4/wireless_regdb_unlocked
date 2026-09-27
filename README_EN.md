@@ -190,7 +190,7 @@ The bands below describe the complete experimental `full` preset. The `extended`
   - This rule does not add support for LoRa/LoRaWAN or other Sub‑GHz technologies, which normally use their own hardware, drivers and frequency configuration mechanisms.
 
 - **2.4 GHz**
-  - **2400-2483.5 MHz** - channels **1-13**, up to **40 MHz**
+  - **2400-2483.5 MHz** - channels **1-13**, up to **40 MHz** (in the `iw` output, 2483.5 is shown as 2483)
   - **2474-2494 MHz** - channel **14**, up to **20 MHz**
   - Maximum EIRP: **36 dBm**
   - The rule does not override limitations imposed by the wireless standard or driver. In common implementations, channel 14 is available only in compatible modes, usually 802.11b.
@@ -237,7 +237,7 @@ The bands below describe the complete experimental `full` preset. The `extended`
 
 - **45 GHz/802.11aj (42.39-48.33 GHz)**
   - A millimeter-wave band used by specialized 802.11aj implementations.
-  - The frequency plan and channel numbering depend on the implementation.
+  - In the WiGig profile, channels 1–10 use **540 MHz** bandwidth, and channels 11–15 use **1.08 GHz** bandwidth.
   - Maximum width: **1080 MHz**
   - Maximum EIRP: **44 dBm**
   - Specialized mmWave hardware is required; ordinary Wi-Fi radios do not support this band.
