@@ -4,7 +4,7 @@
 
 Modified wireless-regdb regulatory database based on [wireless-regdb](https://kernel.org/pub/software/network/wireless-regdb/).
 
-Purpose: generate a custom *unsigned* `regulatory.db` with relaxed restrictions for use in OpenWrt. A built-in frequency profile can be selected during the build, and custom profiles can be added.
+Purpose: generate a custom *unsigned* `regulatory.db` with relaxed restrictions for use in OpenWrt. A built-in frequency profile can be selected during the build, custom profiles can be added, and, if needed, a profile can be applied only to selected countries.
 
 > **⚠️ WARNING**
 >
@@ -16,7 +16,7 @@ Purpose: generate a custom *unsigned* `regulatory.db` with relaxed restrictions 
 
 ## Quick start
 
-Build with the default `extended` preset:
+Build with the default `extended` preset for all countries:
 
 ```bash
 git clone https://github.com/4n0n4/wireless_regdb_unlocked.git
@@ -33,6 +33,18 @@ Build with an explicitly selected preset:
 ./run.sh mini
 ```
 
+Build with a preset applied only to selected countries (comma-separated country codes, no spaces):
+
+```bash
+# Extended profile applied only to RU and JP
+./run.sh extended RU,JP
+
+# Mini profile applied only to 00 (world), RU, and JP
+./run.sh mini 00,RU,JP
+```
+
+If the second argument (country list) is not specified, the selected preset is applied to **all countries**, as before.
+
 Then place `regulatory.db` into `/lib/firmware/regulatory.db` in your OpenWrt build and fully reboot the router to load the new regulatory database.
 
 After replacing `regulatory.db`, perform a **full router reboot**. Restarting Wi-Fi or network services alone may not be sufficient because the regulatory database is loaded by the kernel and the `cfg80211` subsystem.
@@ -47,11 +59,13 @@ The `run.sh` script executes:
 
 ```bash
 bash update_regdb.sh
-python3 db_txt_modificator.py db.txt.orig db.txt <preset>
+python3 db_txt_modificator.py db.txt.orig db.txt <preset> [countries]
 python3 db2fw.py regulatory.db db.txt
 ```
 
-The `<preset>` argument is optional. If it is omitted, the `extended` preset is used.
+- The `<preset>` argument is optional. If it is omitted or empty, the `extended` preset is used.
+- The `[countries]` argument is optional. If it is omitted or empty, the preset is applied to **all** countries.
+  If it is specified, the preset is applied only to the listed country codes (for example: `RU`, `JP`, `00`); all other `country` entries remain unchanged.
 
 As a result, a new `regulatory.db` appears in the repository root.
 
@@ -62,7 +76,7 @@ As a result, a new `regulatory.db` appears in the repository root.
 The project includes three built-in presets:
 
 - **`full`** - full experimental profile containing all bands added by the project, including rare and specialized bands;
-- **`extended`** - extended profile for commercially produced and available hardware; used by default;
+- **`extended`** - extended profile for commercially produced and widely available hardware; used by default;
 - **`mini`** - minimal profile containing the main conventional Wi-Fi bands.
 
 Select a preset by passing its name as the first argument to `run.sh`:
@@ -73,7 +87,14 @@ Select a preset by passing its name as the first argument to `run.sh`:
 ./run.sh mini
 ```
 
-Running the script without an argument selects `extended`:
+With explicit country selection:
+
+```bash
+./run.sh extended RU,JP
+./run.sh full 00,RU,JP
+```
+
+Running the script without arguments selects `extended` for all countries:
 
 ```bash
 ./run.sh
@@ -105,6 +126,18 @@ python3 db_txt_modificator.py db.txt.orig db.txt extended
 python3 db_txt_modificator.py db.txt.orig db.txt mini
 ```
 
+Direct usage with a preset applied only to selected countries:
+
+```bash
+# Extended profile only for RU
+python3 db_txt_modificator.py db.txt.orig db.txt extended RU
+
+# Full profile only for 00 and JP
+python3 db_txt_modificator.py db.txt.orig db.txt full 00,JP
+```
+
+If the fourth argument (country list) is not specified, the preset is applied to all countries.
+
 ### Custom presets
 
 Custom profiles can be added to the `PRESETS` dictionary in `db_txt_modificator.py`.
@@ -117,6 +150,12 @@ To add a custom preset:
 
 ```bash
 ./run.sh mypreset
+```
+
+Optionally, you can also restrict the preset to specific countries:
+
+```bash
+./run.sh mypreset RU,JP
 ```
 
 Example:
@@ -252,7 +291,7 @@ The bands below describe the complete experimental `full` preset. The `extended`
 
 ### What the profiles change
 
-For the bands included in the selected preset, the project defines its chosen maximum channel widths and EIRP values. Every country is assigned the same rule set from the selected preset without the usual country-specific differences.
+For the bands included in the selected preset, the project defines its chosen maximum channel widths and EIRP values. A single rule set from the selected preset is used for all countries (or only for the selected countries, if a country list is provided), without the usual country-specific differences.
 
 Removed or not specified:
 
@@ -303,7 +342,9 @@ The nominal PHY rate on channel 14 is limited to 802.11b rates of up to 11 Mbit/
   - removes comments;
   - accepts an optional third argument containing the preset name;
   - uses `extended` when no preset is specified;
-  - inserts the selected unified frequency/power profile for every country (`country XX:`);
+  - accepts an optional fourth argument containing a comma-separated list of country codes (`RU`, `JP`, `00`, etc.); when omitted, the preset is applied to all countries;
+  - for the selected countries (`country XX:`) inserts a unified set of frequency and power rules from the chosen preset;
+  - when a country filter is present, leaves all other `country` blocks unchanged;
   - can display the list of available presets;
   - preserves the `wmmrule ETSI:` block without comments.
 - **`dbparse.py`** - text `db.txt` parser from upstream wireless-regdb.
@@ -312,7 +353,8 @@ The nominal PHY rate on channel 14 is limited to 802.11b rates of up to 11 Mbit/
   - creates an *unsigned* `regulatory.db` compatible with OpenWrt;
   - uses the standard `regulatory.db` structure without a signature field.
 - **`run.sh`** - wrapper for the complete workflow:
-  - accepts the preset name as its first argument;
+  - accepts the preset name as its first argument (defaults to `extended`);
+  - accepts an optional second argument: comma-separated list of countries (`RU`, `JP`, `00`);
   - updates the source database through `update_regdb.sh`;
   - generates the modified `db.txt`;
   - builds `regulatory.db`.
@@ -326,12 +368,14 @@ The nominal PHY rate on channel 14 is limited to 802.11b rates of up to 11 Mbit/
 ## How it works
 
 1. `db.txt.orig`, a dump of the standard regulatory database, is used as input. When `run.sh` is called, it may be automatically updated through `update_regdb.sh`.
-2. `run.sh` passes its first argument to `db_txt_modificator.py` as the preset name. If the argument is omitted, `extended` is selected.
+2. `run.sh`:
+   - takes the preset name as its first argument; if the argument is missing or empty, `extended` is selected;
+   - takes an optional second argument containing a comma-separated list of country codes (`RU`, `JP`, `00`).
 3. `db_txt_modificator.py`:
    - selects the requested built-in or custom preset;
-   - keeps only the `country CC:` header for each country;
-   - inserts the frequency and power rules from the selected preset;
-   - creates a common profile for all countries.
+   - if no country list is provided, keeps only the `country CC:` header for each country and inserts the preset’s bands and power levels (one common profile for all countries);
+   - if a country list is provided, replaces the contents only for the listed countries and leaves the remaining `country` entries unchanged;
+   - produces a modified `db.txt`.
 4. `db2fw.py`:
    - parses the modified `db.txt`;
    - builds an unsigned binary `regulatory.db`.

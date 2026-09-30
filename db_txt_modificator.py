@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sys
 import re
+from typing import Optional, Set
 
 
 # Встроенные пресеты.
@@ -64,14 +65,27 @@ def is_comment(line: str) -> bool:
 def transform(
     input_path: str,
     output_path: str,
-    preset_name: str
+    preset_name: str,
+    allowed_countries: Optional[Set[str]] = None,
 ) -> None:
-    """Преобразует regulatory DB с использованием выбранного пресета."""
+    """
+    Преобразует regulatory DB с использованием выбранного пресета.
+
+    allowed_countries:
+      * None  — подменять все страны (старое поведение)
+      * set() — то же, что None
+      * { 'RU', 'US', '00' } — подменять только указанные страны,
+        остальные оставить как в исходнике.
+    """
 
     template_lines = PRESETS[preset_name]
 
     with open(input_path, 'r', encoding='utf-8') as input_file:
         lines = input_file.readlines()
+
+    # Пустой набор трактуем как "нет фильтра"
+    if allowed_countries is not None and len(allowed_countries) == 0:
+        allowed_countries = None
 
     output_lines = []
     i = 0
@@ -84,27 +98,42 @@ def transform(
             i += 1
             continue
 
-        # Заменяем содержимое country выбранным пресетом.
+        # Zаменяем содержимое country в зависимости от фильтра стран.
         country_match = COUNTRY_RE.match(line)
 
         if country_match:
             country_code = country_match.group(1)
 
-            output_lines.append(f"country {country_code}:\n")
+            should_replace = (
+                allowed_countries is None or
+                country_code in allowed_countries
+            )
 
-            for template_line in template_lines:
-                output_lines.append(template_line + "\n")
+            if should_replace:
+                # Подмена содержимого блока country выбранным пресетом.
+                output_lines.append(f"country {country_code}:\n")
 
-            # Пропускаем исходное тело блока country.
-            i += 1
+                for template_line in template_lines:
+                    output_lines.append(template_line + "\n")
 
-            while i < len(lines):
-                next_line = lines[i]
-
-                if not next_line.startswith((' ', '\t')):
-                    break
-
+                # Пропускаем исходное тело блока country.
                 i += 1
+                while i < len(lines):
+                    next_line = lines[i]
+                    if not next_line.startswith((' ', '\t')):
+                        break
+                    i += 1
+
+            else:
+                # Оставляем блок country без изменений.
+                output_lines.append(line)
+                i += 1
+                while i < len(lines):
+                    next_line = lines[i]
+                    if not next_line.startswith((' ', '\t')):
+                        break
+                    output_lines.append(next_line)
+                    i += 1
 
             continue
 
@@ -175,10 +204,24 @@ def print_usage(program_name: str) -> None:
 
     print(
         f"Использование (Usage):\n"
-        f"  {program_name} <input_db.txt> <output_db.txt> [preset]\n"
+        f"  {program_name} <input_db.txt> <output_db.txt> [preset] [countries]\n"
         f"  {program_name} --list-presets\n\n"
-        f"Пресет по умолчанию (Default preset): {DEFAULT_PRESET}"
+        f"Пресет по умолчанию (Default preset): {DEFAULT_PRESET}\n\n"
+        f"Аргумент countries (необязательный): список кодов стран через запятую.\n"
+        f"Примеры:\n"
+        f"  {program_name} regdb.txt regdb_patched.txt extended RU\n"
+        f"  {program_name} regdb.txt regdb_patched.txt full RU,US,00\n"
+        f"Если не указан — подмена применяется ко всем странам."
     )
+
+
+def parse_countries_arg(arg: str) -> Set[str]:
+    """
+    Разбирает строку вида 'RU,US,00' в множество {'RU', 'US', '00'}.
+    Пустые элементы отбрасываются, приводится к верхнему регистру.
+    """
+    parts = [c.strip().upper() for c in arg.split(',')]
+    return {c for c in parts if c}
 
 
 def main() -> int:
@@ -191,7 +234,7 @@ def main() -> int:
         print_presets()
         return 0
 
-    if len(sys.argv) not in (3, 4):
+    if len(sys.argv) not in (3, 4, 5):
         print_usage(sys.argv[0])
         return 1
 
@@ -199,7 +242,7 @@ def main() -> int:
     output_path = sys.argv[2]
 
     # Пустое значение также означает пресет по умолчанию.
-    if len(sys.argv) == 4:
+    if len(sys.argv) >= 4:
         preset_name = sys.argv[3].strip().lower()
     else:
         preset_name = ""
@@ -216,11 +259,19 @@ def main() -> int:
         print_presets()
         return 2
 
+    # Разбор списка стран (опциональный 5-й аргумент).
+    allowed_countries = None
+    if len(sys.argv) == 5:
+        countries_arg = sys.argv[4].strip()
+        if countries_arg:
+            allowed_countries = parse_countries_arg(countries_arg)
+
     try:
         transform(
             input_path=input_path,
             output_path=output_path,
             preset_name=preset_name,
+            allowed_countries=allowed_countries,
         )
     except OSError as error:
         print(
@@ -230,9 +281,20 @@ def main() -> int:
         )
         return 3
 
+    if allowed_countries is None:
+        countries_info = "для всех стран (for all countries)"
+    else:
+        countries_info = (
+            "только для стран (only for these countries): "
+            + ", ".join(sorted(allowed_countries))
+        )
+
     print(
         f"Применён пресет: {preset_name} "
         f"(Applied preset: {preset_name})"
+    )
+    print(
+        f"Фильтр по странам: {countries_info}"
     )
     print(
         f"Результат записан в: {output_path} "
